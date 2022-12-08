@@ -5,7 +5,7 @@ PROGRAMMER  = avrisp2
 LFUSE    	= 0xE6
 HFUSE    	= 0xD9
 
-MODULES = spi main
+MODULES = spi ym2612 sn76489 main
 OBJECTS = $(foreach MODULE, ${MODULES}, build/${MODULE}.o)
 CFLAGS  = -Wall -O2 -std=c11
 LDFLAGS = 

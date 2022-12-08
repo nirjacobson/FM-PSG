@@ -6,19 +6,16 @@
 #include <util/delay.h>
 
 #include "spi.h"
-
-#define LEDS_CE 0xD2
+#include "ym2612.h"
+#include "sn76489.h"
 
 int main() {
-    DIR(LEDS_CE, 1);
-    OUT(LEDS_CE, 1);
-
     spi_init(SPI_2);
 
-    while(true) {
-        spi_transmit(0xAA);
-        _delay_ms(500);
-        spi_transmit(0x55);
-        _delay_ms(500);
-    }
+    sn76489_init();
+    ym2612_init();
+
+    ym2612_test();
+    _delay_ms(1000);
+    sn76489_test();
 }
