@@ -1,8 +1,6 @@
 #include "global.h"
 
 #include <stdbool.h>
-#include <stdint.h>
-#include <avr/pgmspace.h>
 #include <util/delay.h>
 
 #define LED     0xB2
