@@ -16,9 +16,9 @@ int main() {
     spi_init(SPI_2);
 
     while(true) {
-        spi_transmit(0xAA);
+        spi_transmit(0b10101010);
         _delay_ms(500);
-        spi_transmit(0x55);
+        spi_transmit(0b01010101);
         _delay_ms(500);
     }
 }
