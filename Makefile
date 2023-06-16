@@ -12,8 +12,6 @@ LDFLAGS  =
 EXEC     = fm-psg
 EXEC_HEX = ${EXEC}.hex
 
-all: ${EXEC_HEX}
-
 ${EXEC_HEX}: ${EXEC}
 	avr-objcopy -j .text -j .data -O ihex $< $@
 
