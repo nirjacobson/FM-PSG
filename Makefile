@@ -7,7 +7,7 @@ HFUSE    	= 0xD9
 
 MODULES = sram spi usart main
 OBJECTS = $(foreach MODULE, ${MODULES}, build/${MODULE}.o)
-CFLAGS  = -Wall -O2 -std=c11
+CFLAGS  = -Wall -O2 -std=c11 --param=min-pagesize=0
 LDFLAGS = 
 EXEC    = fm-psg
 EXEC_HEX = ${EXEC}.hex
