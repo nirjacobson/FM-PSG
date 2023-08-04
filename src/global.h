@@ -4,6 +4,8 @@
 #define F_CPU     20000000UL
 
 #include <avr/pgmspace.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #define PORT_BASE_ADDR(x)       ((x - 0xA) * 3)
 #define PORT_IN(x)              _SFR_IO8(PORT_BASE_ADDR(x))
