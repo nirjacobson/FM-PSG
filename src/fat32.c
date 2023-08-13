@@ -155,3 +155,50 @@ uint32_t fat32_cluster_lba(const FAT32_FS* fs, uint32_t cluster) {
 bool fat32_file_has_extension(FAT32_File* file, const char* extension) {
     return strncmp(&file->name[8], extension, strlen(extension)) == 0;
 }
+
+bool fat32_get_file_from_directory(FAT32_File* dir, FAT32_File* file, const char* name) {
+    uint8_t block[SD_BLOCK_SIZE];
+    uint32_t lba =  fat32_cluster_lba(dir->fs, dir->first_cluster);
+    sd_read_block(lba, block);
+
+    uint32_t position = 0;
+
+    while (position < SD_BLOCK_SIZE) {
+        uint8_t* entry = block + (position % SD_BLOCK_SIZE);
+
+        if (FAT32_ENTRY_DELETED(entry))
+            return false;
+
+        if (!(FAT32_ENTRY_UNUSED(entry) ||
+                FAT32_ENTRY_LFN(entry) ||
+                FAT32_ENTRY_VOLUMEID(entry) ||
+                FAT32_ENTRY_HIDDEN(entry))) {
+            char filename[12];
+            memcpy(filename, entry, sizeof(filename));
+            if (strncmp(filename, name, strlen(name)) == 0) {
+                file->attrib = entry[11];
+                file->fs = dir->fs;
+                memcpy(file->name, entry, sizeof(file->name));
+                file->name[sizeof(file->name)-1] = '\0';
+                file->first_cluster = FAT32_ENTRY_CLUSTER_HIGH(entry);
+                file->first_cluster <<= 16;
+                file->first_cluster |= FAT32_ENTRY_CLUSTER_LOW(entry);
+                file->size = FAT32_ENTRY_FILE_SIZE(entry);
+                return true;
+            }
+        }
+
+        position += FAT32_DIRENTRY_SIZE;
+    }
+
+    return false;
+}
+
+void fat32_read_block_from_file(FAT32_File* file, uint32_t block, uint8_t* data) {
+    uint32_t cluster_idx = block / file->fs->sectors_per_cluster;
+    uint32_t cluster = fat32_cluster_number(file, cluster_idx);
+    uint8_t block_idx = block % file->fs->sectors_per_cluster;
+    uint32_t lba = fat32_cluster_lba(file->fs, cluster) + block_idx;
+
+    sd_read_block(lba, data);
+}

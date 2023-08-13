@@ -63,5 +63,8 @@ uint32_t fat32_next_cluster(const FAT32_FS* fs, uint32_t cluster);
 uint32_t fat32_cluster_number(const FAT32_File* file, uint32_t cluster_idx);
 uint32_t fat32_cluster_lba(const FAT32_FS* fs, uint32_t cluster);
 
+bool fat32_get_file_from_directory(FAT32_File* dir, FAT32_File* file, const char* name);
+void fat32_read_block_from_file(FAT32_File* file, uint32_t block, uint8_t* data);
+
 
 #endif // FAT32_H

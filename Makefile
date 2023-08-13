@@ -3,13 +3,13 @@ DEVICE		= m644p
 SERIAL_PORT = /dev/ttyUSB0
 PROGRAMMER  = avrisp2 
 LFUSE    	= 0xE6
-HFUSE    	= 0xD9
+HFUSE     = 0xD8
 
-MODULES = buttons usart spi sd sram ym2612 sn76489 fat32 vgm pcm vgmplayer main
+MODULES = buttons usart spi sd fat32 flash stk500v2 main
 OBJECTS = $(foreach MODULE, ${MODULES}, build/${MODULE}.o)
 CFLAGS  = -Wall -O2 -std=c11 --param=min-pagesize=0
 LDFLAGS = 
-EXEC    = fm-psg
+EXEC    = bootloader
 EXEC_HEX = ${EXEC}.hex
 
 all: build/ ${EXEC_HEX}
@@ -37,7 +37,7 @@ ${EXEC_HEX}: ${EXEC}
 	avr-objcopy -j .text -j .data -O ihex $< $@
 
 ${EXEC}: ${OBJECTS}
-	avr-gcc -mmcu=${MMCU} $^ -o $@ ${LDFLAGS}
+	avr-gcc -mmcu=${MMCU} -Ttext=0xE000 $^ -o $@ ${LDFLAGS}
 
 format:
 	astyle -rnNCS *.{c,h}
