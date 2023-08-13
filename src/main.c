@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
+#include "buttons.h"
 #include "usart.h"
 #include "spi.h"
 #include "sd.h"
@@ -26,7 +27,18 @@ VGMPlayer vgm_player;
 bool input_callback(char byte) {
     switch (byte) {
         case 'p':   // pause
-            while (usart_receive(false) != 'p') ;
+            char byte;
+            while (true) {
+                if (usart_try_receive(false, &byte)) {
+                    if (byte == 'p') {
+                        break;
+                    }
+                }
+                if (is_button_pressed(1)) {
+                    while (is_button_pressed(1)) ;
+                    break;
+                }
+            }
             break;
         case 'n':   // next
             return true;
@@ -66,6 +78,9 @@ void stream_directory(FAT32_FileStream* stream, void* file, size_t len, void* le
 }
 
 bool init() {
+    // Buttons
+    buttons_init();
+
     // Serial
     usart_init(BAUD);
     usart_send_line("Hello world!");

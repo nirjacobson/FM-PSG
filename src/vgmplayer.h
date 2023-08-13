@@ -13,6 +13,7 @@
 #include "ym2612.h"
 #include "sn76489.h"
 #include "usart.h"
+#include "buttons.h"
 
 struct VGMPlayer;
 

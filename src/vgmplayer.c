@@ -74,6 +74,18 @@ void vgm_player_play(VGMPlayer* player, FAT32_File* file, vgm_input_callback inp
                 break;
             }
         }
+        if (is_button_pressed(1)) {
+            while (is_button_pressed(1)) ;
+            if (input_callback('p')) {
+                break;
+            }
+        }
+        if (is_button_pressed(3)) {
+            while (is_button_pressed(3)) ;
+            if (input_callback('n')) {
+                break;
+            }
+        }
     }
 }
 
