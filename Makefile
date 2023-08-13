@@ -4,6 +4,7 @@ SERIAL_PORT = /dev/ttyUSB0
 PROGRAMMER  = avrisp2 
 LFUSE    	= 0xE6
 HFUSE     = 0xD8
+LOCK    = 0xEF
 
 MODULES = buttons usart spi sd fat32 flash stk500v2 main
 OBJECTS = $(foreach MODULE, ${MODULES}, build/${MODULE}.o)
@@ -15,7 +16,7 @@ EXEC_HEX = ${EXEC}.hex
 all: build/ ${EXEC_HEX}
 
 upload: ${EXEC_HEX}
-	avrdude -P ${SERIAL_PORT} -p ${DEVICE} -c ${PROGRAMMER} -F -e -U flash:w:${EXEC_HEX}
+	avrdude -P ${SERIAL_PORT} -p ${DEVICE} -c ${PROGRAMMER} -F -e -U flash:w:${EXEC_HEX} -U lock:w:${LOCK}:m
 
 lfuse:
 	avrdude -P ${SERIAL_PORT} -p ${DEVICE} -c ${PROGRAMMER} -U lfuse:w:${LFUSE}:m
