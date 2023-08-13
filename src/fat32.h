@@ -22,10 +22,6 @@
 #define FAT32_ENTRY_HIDDEN(e)       (e[11] & (1 << 1))
 #define FAT32_ENTRY_VOLUMEID(e)     (e[11] & (1 << 3))
 
-struct FAT32_FileStream;
-
-typedef void(*fat32_stream_callback)(struct FAT32_FileStream*, void*, size_t, void*);
-
 typedef struct {
     uint32_t lba_fat;
     uint32_t lba_clusters;
@@ -41,23 +37,11 @@ typedef struct {
     uint32_t size;
 } FAT32_File;
 
-typedef struct FAT32_FileStream {
-    FAT32_File* file;
-    uint32_t cluster;
-    uint32_t position;
-    uint8_t block_idx;
-    fat32_stream_callback callback;
-
-    SD_Block_Cache* block;
-} FAT32_FileStream;
-
 bool fat32_init(FAT32_FS* fs, uint32_t partition_lba);
 void fat32_root(FAT32_File* file, FAT32_FS* fs);
-void fat32_stream(FAT32_FileStream* stream, FAT32_File* file, SD_Block_Cache* block, fat32_stream_callback callback);
-bool fat32_stream_next(FAT32_FileStream* stream, void* userData);
-void fat32_stream_advance(FAT32_FileStream* stream, size_t items);
-void fat32_stream_set_position(FAT32_FileStream* stream, uint32_t position);
+
 bool fat32_file_has_extension(FAT32_File* file, const char* extension);
+
 uint32_t fat32_next_cluster(const FAT32_FS* fs, uint32_t cluster);
 
 uint32_t fat32_cluster_number(const FAT32_File* file, uint32_t cluster_idx);
