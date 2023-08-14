@@ -90,7 +90,7 @@ bool sd_boot() {
             FAT32_File bin;
             found = fat32_get_file_from_directory(&bindir, &bin, argv[0]);
 
-            if (found) {
+            if (found && argc > 0) {
                 flash_program(&bin);
                 flash_args(argc, argv);
                 ((void(*)(void))0)(); // reset
