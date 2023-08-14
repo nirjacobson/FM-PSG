@@ -39,7 +39,7 @@ typedef struct {
   uint8_t sequenceNumber;
   uint16_t size;
   uint8_t token;
-  uint8_t body[256];
+  uint8_t body[512];
   uint8_t checksum;
 } STK500V2_Message;
 
