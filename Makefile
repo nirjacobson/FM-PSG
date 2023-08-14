@@ -37,7 +37,7 @@ format:
 
 clean:
 	rm -rf build
-	rm -r ${EXEC}
-	rm -r ${EXEC_HEX}
-	rm -r ${EXEC_BIN}
+	rm -f ${EXEC}
+	rm -f ${EXEC_HEX}
+	rm -f ${EXEC_BIN}
 
