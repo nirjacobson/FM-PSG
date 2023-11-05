@@ -21,5 +21,6 @@ void flash_read_page(uint32_t page, uint8_t* data, size_t len);
 
 void flash_program(FAT32_File* file);
 void flash_args(int argc, char* argv[]);
+void flash_read_args(int* argc, char** argv[]);
 
 #endif // FLASH_H

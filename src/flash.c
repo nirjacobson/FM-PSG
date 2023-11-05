@@ -108,29 +108,29 @@ void flash_args(int argc, char* argv[]) {
   uint16_t ptr = ((argc + 1) * sizeof(uint16_t));
   for (int i = 0; i < argc; i++) {
     *(uint16_t*)(page + offset) = ptr;
-    offset += sizeof(uint16_t);
     strcpy((char*)(page + ptr), argv[i]);
+
+    offset += sizeof(uint16_t);
     ptr += strlen(argv[i]) + 1;
   }
 
-  uint8_t sreg = SREG;
-  cli();
+  flash_write_page(FLASH_ARGS_PAGE, page, SPM_PAGESIZE);
+}
 
-//   eeprom_busy_wait ();
+void flash_read_args(int* argc, char** argv[]) {
+  uint8_t page[SPM_PAGESIZE];
+  uint8_t offset = 0;
+  flash_read_page(FLASH_ARGS_PAGE, page, SPM_PAGESIZE);
 
-  boot_page_erase (FLASH_ARGS_PAGE);
-  boot_spm_busy_wait ();
+  uint16_t _argc = *(uint16_t*)(page + offset);
+  offset += sizeof(uint16_t);
 
-  for (uint16_t i = 0; i < SPM_PAGESIZE; i += sizeof(uint16_t)) {
-      uint16_t w = *(uint16_t*)(page + i);
-
-      boot_page_fill(FLASH_ARGS_PAGE + i, w);
+  for (int i = 0; i < _argc; i++) {
+    uint16_t ptr = *(uint16_t*)(page + offset);
+    strcpy((*argv)[i], (char*)(page + ptr));
+    
+    offset += sizeof(uint16_t);
   }
 
-  boot_page_write(FLASH_ARGS_PAGE);
-  boot_spm_busy_wait();
-
-  boot_rww_enable();
-
-  SREG = sreg;
+  *argc = _argc;
 }
