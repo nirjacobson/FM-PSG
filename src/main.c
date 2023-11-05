@@ -21,23 +21,6 @@ MBR mbr;
 FAT32_FS fs;
 FAT32_File root;
 
-int parse_command(char* command, char* argv[]) {
-  int argc = 0;
-  size_t len = strlen(command);
-
-  for (size_t i = 0; i < len; i++) {
-      if ((i == 0 || command[i-1] == '\0') && command[i] != ' ') {
-          argv[argc++] = &command[i];
-      }
-
-      if (command[i] == ' ') {
-          command[i] = '\0';
-      }
-  }
-
-  return argc;
-}
-
 void common_init() {
     // Buttons
     buttons_init();
@@ -85,7 +68,8 @@ bool sd_boot() {
             usart_send_line(NULL);
 
             char* argv[8];
-            int argc = parse_command(line, argv);
+            int argc;
+            flash_parse_args(line, &argc, argv);
 
             FAT32_File bin;
             found = fat32_get_file_from_directory(&bindir, &bin, argv[0]);

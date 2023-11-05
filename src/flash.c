@@ -96,6 +96,24 @@ void flash_program(FAT32_File* file) {
     }
 }
 
+void flash_parse_args(char* line, int* argc, char* argv[]) {
+
+  int _argc = 0;
+  size_t len = strlen(line);
+
+  for (size_t i = 0; i < len; i++) {
+      if ((i == 0 || line[i-1] == '\0') && line[i] != ' ') {
+          argv[_argc++] = &line[i];
+      }
+
+      if (line[i] == ' ') {
+          line[i] = '\0';
+      }
+  }
+
+  *argc = _argc;
+}
+
 void flash_args(int argc, char* argv[]) {
   uint8_t page[SPM_PAGESIZE];
   uint8_t offset = 0;
@@ -114,7 +132,7 @@ void flash_args(int argc, char* argv[]) {
   flash_write_page(FLASH_ARGS_PAGE, page, SPM_PAGESIZE);
 }
 
-void flash_read_args(int* argc, char** argv[]) {
+void flash_read_args(int* argc, char* argv[]) {
   uint8_t page[SPM_PAGESIZE];
   uint8_t offset = 0;
   flash_read_page(FLASH_ARGS_PAGE, page, SPM_PAGESIZE);
@@ -124,7 +142,7 @@ void flash_read_args(int* argc, char** argv[]) {
 
   for (int i = 0; i < _argc; i++) {
     uint16_t ptr = *(uint16_t*)(page + offset);
-    strcpy((*argv)[i], (char*)(page + ptr));
+    strcpy(argv[i], (char*)(page + ptr));
     
     offset += sizeof(uint16_t);
   }
