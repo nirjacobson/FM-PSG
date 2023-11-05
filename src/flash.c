@@ -32,11 +32,8 @@ void flash_write_page(uint32_t page, uint8_t* data, size_t len) {
 
     for (i=0; i<FLASH_PAGE_SIZE && i<len; i+=2)
     {
-        // Set up little-endian word.
-        uint16_t w = *data++;
-        w += (*data++) << 8;
-    
-        boot_page_fill (page + i, w);
+        boot_page_fill (page + i, *(uint16_t*)data);
+        data += 2;
     }
 
     boot_page_write (page);
@@ -71,7 +68,7 @@ void flash_program(FAT32_File* file) {
         sreg = SREG;
         cli();
 
-        // eeprom_busy_wait ();
+        eeprom_busy_wait ();
 
         boot_page_erase (page);
         boot_spm_busy_wait ();
