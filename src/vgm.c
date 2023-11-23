@@ -76,7 +76,7 @@ void vgm_stream_next_command(VGM_Stream* stream) {
         commandLength = 3;
     } else if (command == VGM_COMMAND_SN76489_WRITE || command == VGM_COMMAND_GAME_GEAR_WRITE) {
         commandLength = 2;
-    } else if (command == VGM_COMMAND_SEEK) {
+    } else if ((command & 0xF0) == VGM_COMMAND_SEEK || command == VGM_COMMAND_YM2612_WRITEDN) {
         commandLength = 5;
     } else if (command == VGM_COMMAND_DATA_BLOCK) {
         commandLength = 7;

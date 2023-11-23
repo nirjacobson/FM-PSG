@@ -18,7 +18,11 @@ void pcm_stream(PCM_Stream* pcmStream, FAT32_File* file, SD_Block_Cache* block) 
     fat32_stream(&pcmStream->fileStream, file, block, pcm_stream_file);
 
     pcmStream->write_ptr = 0;
-    pcmStream->read_ptr = 0;
+    for (int i = 0; i < PCM_CHANNELS; i++) {
+        pcmStream->read_ptrs[i] = -1;
+    }
+    pcmStream->stream_count = 0;
+    pcmStream->last_sample = 0x80;
     pcmStream->copy_bytes_remaining = 0;
 }
 
@@ -30,9 +34,44 @@ void pcm_stream_set_data(PCM_Stream* pcmStream, uint32_t offset, uint32_t size) 
 }
 
 uint8_t pcm_stream_next(PCM_Stream* pcmStream) {
-    return sram_read(pcmStream->read_ptr++);
+    int16_t result = 0x00;
+
+    if (pcmStream->stream_count > 1) {
+        pcmStream->stream_count--;
+
+        for (int i = 0; i < PCM_CHANNELS; i++) {
+            if (pcmStream->read_ptrs[i] != -1) {
+                pcmStream->read_ptrs[i]++;
+            }
+        }
+
+        return pcmStream->last_sample;
+    }
+
+    pcmStream->stream_count = 0;
+    for (int i = 0; i < PCM_CHANNELS; i++) {
+        if (pcmStream->read_ptrs[i] != -1) {
+            pcmStream->stream_count++;
+
+            int16_t sample = sram_read(pcmStream->read_ptrs[i]++);
+
+            result += sample - 0x80;
+        }
+    }
+
+    if (result < -0x80) {
+        return 0;
+    } else if (result >= 0x80) {
+        return 0xFF;
+    }
+
+    result += 0x80;
+
+    pcmStream->last_sample = result;
+
+    return result;
 }
 
-void pcm_stream_seek(PCM_Stream* pcmStream, uint32_t offset) {
-    pcmStream->read_ptr = offset;
+void pcm_stream_seek(PCM_Stream* pcmStream, uint8_t channel, uint32_t offset) {
+    pcmStream->read_ptrs[channel] = offset;
 }

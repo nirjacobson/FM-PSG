@@ -15,6 +15,7 @@
 #define VGM_COMMAND_DATA_BLOCK      0x67
 #define VGM_COMMAND_WAITN1          0x70
 #define VGM_COMMAND_YM2612_WRITED   0x80
+#define VGM_COMMAND_YM2612_WRITEDN  0x96
 #define VGM_COMMAND_SEEK            0xE0
 
 #include "fat32.h"

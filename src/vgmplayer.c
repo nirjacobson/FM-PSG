@@ -38,9 +38,19 @@ void stream_vgm(VGM_Stream* stream, uint8_t* command, uint8_t len, void* player)
         uint32_t size = *(uint32_t*)&command[3];
         pcm_stream_set_data(&vgmPlayer->pcm_stream, vgm_stream_position(stream), size);
     } else if (command[0] == VGM_COMMAND_SEEK) {
+        uint8_t channel = (command[0] & 0x0F);
         uint32_t offset = *(uint32_t*)&command[1];
-        pcm_stream_seek(&vgmPlayer->pcm_stream, offset);
+        pcm_stream_seek(&vgmPlayer->pcm_stream, channel, offset);
+    } else if (command[0] == VGM_COMMAND_YM2612_WRITEDN) {
+        uint32_t samplesToWrite = *(uint32_t*)&command[1];
+        while (samplesToWrite > 0) {
+            while (timer > 0);
+            timer = 1;
+            ym2612_write(1, YM2612_DAC, pcm_stream_next(&vgmPlayer->pcm_stream));
+            samplesToWrite--;
+        }
     } else if (command[0] == VGM_COMMAND_END_OF_SOUND) {
+        while (timer > 0);
         // end song
     } else if (command[0] == VGM_COMMAND_GAME_GEAR_WRITE) {
 
