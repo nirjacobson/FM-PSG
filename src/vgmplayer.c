@@ -37,7 +37,7 @@ void stream_vgm(VGM_Stream* stream, uint8_t* command, uint8_t len, void* player)
     } else if (command[0] == VGM_COMMAND_DATA_BLOCK) {
         uint32_t size = *(uint32_t*)&command[3];
         pcm_stream_set_data(&vgmPlayer->pcm_stream, vgm_stream_position(stream), size);
-    } else if (command[0] == VGM_COMMAND_SEEK) {
+    } else if ((command[0] & 0xF0) == VGM_COMMAND_SEEK) {
         uint8_t channel = (command[0] & 0x0F);
         uint32_t offset = *(uint32_t*)&command[1];
         pcm_stream_seek(&vgmPlayer->pcm_stream, channel, offset);
