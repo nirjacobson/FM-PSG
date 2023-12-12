@@ -63,6 +63,31 @@ bool vgm_stream_next(VGM_Stream* stream, void* userData) {
     return !(stream->command[0] == VGM_COMMAND_END_OF_SOUND && stream->loopCount == 0);
 }
 
+uint8_t vgm_command_length(uint8_t command) {
+    if ((command & 0xF0) == VGM_COMMAND_SEEK) {
+        return 5;
+    }
+    if ((command & 0xF0) == VGM_COMMAND_PCM_ATTENUATION) {
+        return 2;
+    }
+
+    switch (command) {
+        case VGM_COMMAND_SN76489_WRITE:
+        case VGM_COMMAND_GAME_GEAR_WRITE:
+            return 2;
+        case VGM_COMMAND_YM2612_WRITE1:
+        case VGM_COMMAND_YM2612_WRITE2:
+        case VGM_COMMAND_WAITN:
+            return 3;
+        case VGM_COMMAND_YM2612_WRITEDN:
+            return 5;
+        case VGM_COMMAND_DATA_BLOCK:
+            return 7;
+        default:
+            return 1;
+    }
+}
+
 void vgm_stream_next_command(VGM_Stream* stream) {
     if (stream->buffer_index == stream->buffer_size) {
         fat32_stream_next(&stream->fileStream, (void*)stream);
@@ -70,17 +95,7 @@ void vgm_stream_next_command(VGM_Stream* stream) {
 
     uint8_t command = stream->buffer[stream->buffer_index];
 
-    size_t commandLength = 1;
-
-    if (command == VGM_COMMAND_YM2612_WRITE1 || command == VGM_COMMAND_YM2612_WRITE2 || command == VGM_COMMAND_WAITN) {
-        commandLength = 3;
-    } else if (command == VGM_COMMAND_SN76489_WRITE || command == VGM_COMMAND_GAME_GEAR_WRITE) {
-        commandLength = 2;
-    } else if ((command & 0xF0) == VGM_COMMAND_SEEK || command == VGM_COMMAND_YM2612_WRITEDN) {
-        commandLength = 5;
-    } else if (command == VGM_COMMAND_DATA_BLOCK) {
-        commandLength = 7;
-    }
+    size_t commandLength = vgm_command_length(command);
 
     if ((command & 0xF0) == VGM_COMMAND_YM2612_WRITED) {
         commandLength = 0;

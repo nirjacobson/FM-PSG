@@ -11,6 +11,7 @@ typedef struct {
 
     uint32_t write_ptr;
     uint32_t read_ptrs[PCM_CHANNELS];
+    uint8_t attens[PCM_CHANNELS];
     uint8_t  stream_count;
     uint8_t last_sample;
     uint32_t copy_bytes_remaining;
@@ -21,6 +22,8 @@ void pcm_stream_set_data(PCM_Stream* pcmStream, uint32_t offset, uint32_t size);
 
 uint8_t pcm_stream_next(PCM_Stream* pcmStream);
 void pcm_stream_seek(PCM_Stream* pcmStream, uint8_t channel, uint32_t offset);
+
+void pcm_set_attenuation(PCM_Stream* pcmStream, uint8_t channel, uint8_t att);
 
 void pcm_stream_file(FAT32_FileStream* fileStream, void* data, size_t len, void* pcmStreamPtr);
 

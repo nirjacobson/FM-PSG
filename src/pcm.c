@@ -20,6 +20,7 @@ void pcm_stream(PCM_Stream* pcmStream, FAT32_File* file, SD_Block_Cache* block) 
     pcmStream->write_ptr = 0;
     for (int i = 0; i < PCM_CHANNELS; i++) {
         pcmStream->read_ptrs[i] = -1;
+        pcmStream->attens[i] = 0;
     }
     pcmStream->stream_count = 0;
     pcmStream->last_sample = 0x80;
@@ -53,19 +54,16 @@ uint8_t pcm_stream_next(PCM_Stream* pcmStream) {
         if (pcmStream->read_ptrs[i] != -1) {
             pcmStream->stream_count++;
 
-            int16_t sample = sram_read(pcmStream->read_ptrs[i]++);
+            int16_t sample = sram_read(pcmStream->read_ptrs[i]++) - 0x80;
 
-            result += sample - 0x80;
+            result += sample >> pcmStream->attens[i];
         }
     }
 
-    if (result < -0x80) {
-        return 0;
-    } else if (result >= 0x80) {
-        return 0xFF;
-    }
-
     result += 0x80;
+
+    if (result < 0)    result = 0;
+    if (result > 0xFF) result = 0xFF;
 
     pcmStream->last_sample = result;
 
@@ -74,4 +72,8 @@ uint8_t pcm_stream_next(PCM_Stream* pcmStream) {
 
 void pcm_stream_seek(PCM_Stream* pcmStream, uint8_t channel, uint32_t offset) {
     pcmStream->read_ptrs[channel] = offset;
+}
+
+void pcm_set_attenuation(PCM_Stream* pcmStream, uint8_t channel, uint8_t att) {
+    pcmStream->attens[channel] = att;
 }

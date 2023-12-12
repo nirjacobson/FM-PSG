@@ -17,6 +17,7 @@
 #define VGM_COMMAND_YM2612_WRITED   0x80
 #define VGM_COMMAND_YM2612_WRITEDN  0x96
 #define VGM_COMMAND_SEEK            0xE0
+#define VGM_COMMAND_PCM_ATTENUATION 0xF0
 
 #include "fat32.h"
 #include "usart.h"
@@ -46,6 +47,8 @@ void vgm_stream_next_command(VGM_Stream* stream);
 void vgm_stream_file(FAT32_FileStream* fileStream, void* data, size_t len, void* vgmStreamPtr);
 
 size_t vgm_stream_position(VGM_Stream* stream);
+
+uint8_t vgm_command_length(uint8_t command);
 
 void vgm_stream_debug(VGM_Stream* stream);
 
