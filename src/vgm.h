@@ -16,15 +16,17 @@
 #define VGM_COMMAND_WAITN1          0x70
 #define VGM_COMMAND_YM2612_WRITED   0x80
 #define VGM_COMMAND_YM2612_WRITEDN  0x96
-#define VGM_COMMAND_SEEK            0xE0
+#define VGM_COMMAND_PCM_SIZE        0xD0
+#define VGM_COMMAND_PCM_SEEK        0xE0
 #define VGM_COMMAND_PCM_ATTENUATION 0xF0
 
 #include "fat32.h"
 #include "usart.h"
+#include "pcm.h"
 
 struct VGM_Stream;
 
-typedef void(*vgm_stream_callback)(struct VGM_Stream*, uint8_t*, uint8_t, void*);
+typedef void(*vgm_stream_callback)(struct VGM_Stream*, uint8_t*, uint16_t, void*);
 
 typedef struct VGM_Stream {
     FAT32_FileStream fileStream;
@@ -37,12 +39,12 @@ typedef struct VGM_Stream {
     uint8_t* buffer;
     uint16_t buffer_index;
     uint32_t buffer_position;
-    size_t buffer_size;
+    uint16_t buffer_size;
 } VGM_Stream;
 
 void vgm_stream(VGM_Stream* vgmStream, FAT32_File* file, SD_Block_Cache* block, vgm_stream_callback callback);
 bool vgm_stream_next(VGM_Stream* stream, void* userData);
-void vgm_stream_next_command(VGM_Stream* stream);
+bool vgm_stream_next_command(VGM_Stream* stream, void* userData);
 
 void vgm_stream_file(FAT32_FileStream* fileStream, void* data, size_t len, void* vgmStreamPtr);
 

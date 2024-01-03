@@ -17,6 +17,18 @@ void ym2612_init() {
     _NOP();
     _NOP();
     _NOP();
+
+    for (int i = 0; i < 6; i++) {
+        uint8_t part = 1 + (i > 2);
+        uint8_t chan = i % 3;
+        for (int j = 0; j < 4; j++) {
+            uint8_t offset = 0x40 + (0x4 * j) + chan;
+            ym2612_write(part, offset, 127);
+        }
+
+        uint8_t channel = i < 3 ? i : (i + 1);
+        ym2612_write(1, YM2612_KEY_ON_OFF, 0 | channel);
+    }
 }
 
 void ym2612_write(unsigned int part, unsigned char address, unsigned char data) {

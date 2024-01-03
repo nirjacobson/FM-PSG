@@ -14,7 +14,10 @@
 #define SRAM_ADDR_PORT  0xC
 
 void sram_init();
-uint8_t sram_read(uint32_t address);
-void sram_write(uint32_t address, uint8_t value);
+uint8_t sram_read(uint16_t address);
+uint8_t sram_read_ext(uint8_t addressHigh, uint16_t addressLow);
+
+void sram_write(uint16_t address, uint8_t value);
+void sram_write_ext(uint32_t address, uint8_t value);
 
 #endif // SRAM_H

@@ -47,67 +47,80 @@ bool vgm_stream_next(VGM_Stream* stream, void* userData) {
         fat32_stream_next(&stream->fileStream, (void*)stream);
     }
 
-    vgm_stream_next_command(stream);
+    bool called = vgm_stream_next_command(stream, userData);
 
-    if (stream->command[0] == VGM_COMMAND_END_OF_SOUND) {
+    if (!called && stream->command[0] == VGM_COMMAND_END_OF_SOUND) {
         if (stream->loopCount > 0) {
             fat32_stream_set_position(&stream->fileStream, stream->loopOffset);
             fat32_stream_next(&stream->fileStream, (void*)stream);
-            vgm_stream_next_command(stream);
+            called = vgm_stream_next_command(stream, userData);
             stream->loopCount--;
         }
     }
 
-    stream->callback(stream, stream->command, stream->commandLen, userData);
+    if (!called) {
+        stream->callback(stream, stream->command, stream->commandLen, userData);
+    }
 
     return !(stream->command[0] == VGM_COMMAND_END_OF_SOUND && stream->loopCount == 0);
 }
 
 uint8_t vgm_command_length(uint8_t command) {
-    if ((command & 0xF0) == VGM_COMMAND_SEEK) {
-        return 5;
-    }
-    if ((command & 0xF0) == VGM_COMMAND_PCM_ATTENUATION) {
-        return 2;
-    }
-
-    switch (command) {
-        case VGM_COMMAND_SN76489_WRITE:
-        case VGM_COMMAND_GAME_GEAR_WRITE:
-            return 2;
-        case VGM_COMMAND_YM2612_WRITE1:
-        case VGM_COMMAND_YM2612_WRITE2:
-        case VGM_COMMAND_WAITN:
+    switch (command & 0xF0) {
+        case VGM_COMMAND_PCM_SIZE:
+            if (pcm_is_long_channel(command & 0x0F)) {
+                return 5;
+            }
             return 3;
-        case VGM_COMMAND_YM2612_WRITEDN:
-            return 5;
-        case VGM_COMMAND_DATA_BLOCK:
-            return 7;
+        case VGM_COMMAND_PCM_SEEK:
+            if (pcm_is_long_channel(command & 0x0F)) {
+                return 5;
+            }
+            return 3;
+        case VGM_COMMAND_PCM_ATTENUATION:
+            return 2;
         default:
-            return 1;
+            switch (command) {
+                case VGM_COMMAND_SN76489_WRITE:
+                case VGM_COMMAND_GAME_GEAR_WRITE:
+                    return 2;
+                case VGM_COMMAND_YM2612_WRITE1:
+                case VGM_COMMAND_YM2612_WRITE2:
+                case VGM_COMMAND_WAITN:
+                    return 3;
+                case VGM_COMMAND_YM2612_WRITEDN:
+                    return 5;
+                case VGM_COMMAND_DATA_BLOCK:
+                    return 7;
+                default:
+                    return 1;
+            }
     }
 }
 
-void vgm_stream_next_command(VGM_Stream* stream) {
+bool vgm_stream_next_command(VGM_Stream* stream, void* userData) {
     if (stream->buffer_index == stream->buffer_size) {
         fat32_stream_next(&stream->fileStream, (void*)stream);
     }
 
     uint8_t command = stream->buffer[stream->buffer_index];
 
-    size_t commandLength = vgm_command_length(command);
-
     if ((command & 0xF0) == VGM_COMMAND_YM2612_WRITED) {
-        commandLength = 0;
-        for (uint8_t i = 0; i < sizeof(stream->command)
-                            && (stream->buffer_index + i) < stream->buffer_size
-                            && (stream->buffer[stream->buffer_index + i] & 0xF0) == VGM_COMMAND_YM2612_WRITED;
-            i++) {
+        uint16_t commandLength = 0;
+        for (uint16_t i = 0; (stream->buffer_index + i) < stream->buffer_size
+                && (stream->buffer[stream->buffer_index + i] & 0xF0) == VGM_COMMAND_YM2612_WRITED;
+                i++) {
             commandLength++;
         }
-        memcpy(stream->command, stream->buffer + stream->buffer_index, commandLength);
+
+        stream->callback(stream, &stream->buffer[stream->buffer_index], commandLength, userData);
+
         stream->buffer_index += commandLength;
+
+        return true;
     } else {
+        uint8_t commandLength = vgm_command_length(command);
+
         if (stream->buffer_index + commandLength > stream->buffer_size) {
             size_t firstSize = stream->buffer_size - stream->buffer_index;
             size_t restSize = commandLength - firstSize;
@@ -119,9 +132,11 @@ void vgm_stream_next_command(VGM_Stream* stream) {
             memcpy(stream->command, stream->buffer + stream->buffer_index, commandLength);
             stream->buffer_index += commandLength;
         }
-    }
 
-    stream->commandLen = commandLength;
+        stream->commandLen = commandLength;
+
+        return false;
+    }
 }
 
 size_t vgm_stream_position(VGM_Stream* stream) {
